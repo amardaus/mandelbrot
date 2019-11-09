@@ -1,7 +1,7 @@
 package complex;
 import java.lang.Math;
 
-public class Complex implements Field<Complex>{
+public class Complex implements Field<Complex>, Cloneable{
 
     public double getRe() {
         return re;
@@ -176,6 +176,18 @@ public class Complex implements Field<Complex>{
             return complex;
         }
     };
+
+    @Override
+    public Object clone() {
+        Complex complex = null;
+        try {
+            complex = (Complex) super.clone();
+        } catch (CloneNotSupportedException e) {
+            complex = new Complex(
+                    this.getRe(), this.getIm());
+        }
+        return complex;
+    }
 
     static double abs(Complex c){
         return Math.sqrt(Math.pow(c.re, 2) + Math.pow(c.im, 2));
