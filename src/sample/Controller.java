@@ -12,9 +12,13 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 
 public class Controller {
+    int R = 4;
     private GraphicsContext gc;
     public Canvas canvas;
     int iterMax = 100;
+    int scale = 256;
+    private double mouseAx, mouseAy, mouseBx, mouseBy;
+    private double xa, xb, ya, yb;
 
     public void initialize() {
         gc = canvas.getGraphicsContext2D();
@@ -28,12 +32,51 @@ public class Controller {
     }
 
     public void mouseMoves(MouseEvent mouseEvent) {
+        double x = mouseEvent.getX();
+        double y = mouseEvent.getY();
+        gc.setGlobalBlendMode(BlendMode.DIFFERENCE);
+        gc.setStroke(Color.WHITE);
+        rect(gc);
+        mouseBx = x;
+        mouseBy = y;
+        rect(gc);
+    }
+
+    private void rect(GraphicsContext gc) {
+        double x = mouseAx;
+        double y = mouseAy;
+        double w = mouseBx - mouseAx;
+        double h = mouseBy - mouseAy;
+
+        if(w < 0){
+            x = mouseBx;
+            w = -w;
+        }
+
+        if(h < 0){
+            y = mouseBy;
+            h = -h;
+        }
+
+        gc.strokeRect(x + 0.5, y + 0.5, w, h);
     }
 
     public void mousePressed(MouseEvent mouseEvent) {
+        mouseAx = mouseEvent.getX();
+        mouseAy = mouseEvent.getY();
+        mouseBx = mouseAx;
+        mouseBy = mouseAy;
     }
 
     public void mouseReleased(MouseEvent mouseEvent) {
+        gc.setGlobalBlendMode(BlendMode.SRC_OVER);
+        rect(gc);
+        zoom();
+
+        //scale*=2;
+        //zoomCount++;
+        //System.out.println("scale" + scale);
+        System.out.format("mouseAx:%f mouseAy:%f mouseBx:%f mouseBy:%f\n", mouseAx, mouseAy, mouseBx, mouseBy);
     }
 
     int mandelbrot(Complex p){
@@ -41,7 +84,7 @@ public class Controller {
 
         for(int i = 0; i < iterMax; i++){
             z = (z.mul(z)).add(p);
-            if(z.sqrAbs() > 4) return i;
+            if(z.sqrAbs() > R) return i;
         }
 
         return iterMax;
@@ -56,40 +99,84 @@ public class Controller {
     }
 
     public void draw(ActionEvent actionEvent) {
-        double xc = 0;
-        double yc = 0;
-
-
+        scale = 256;
         final int height = 512;
         final int width = 512;
-        int n = 512;
+
+        xa = -1;
+        xb = 1;
+        ya = 1;
+        yb = -1;
 
         WritableImage wr = new WritableImage(width, height);
         PixelWriter pw = wr.getPixelWriter();
 
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
-                double x0 = (x - width / 2.0)/170;
-                double y0 = (y - height / 2.0)/170;
+                double x0 = (x - width / 2.0)/scale;
+                double y0 = (y - height / 2.0)/scale;
                 //System.out.println("x0=" + x0 + "\t " + "y0=" + y0);
 
+                /*if((x == 0 && y == 0) || (x == 511 && y == 0) ||(x == 0 && y == 511) ||(x == 511 && y == 511)){
+                    System.out.println("x0=" + x0 + "y0=" + y0);
+                }*/
                 Complex c = new Complex(x0, y0);
+
                 int iterCount = mandelbrot(c);
-                if(iterCount != 0) {
-                    //System.out.println("x0=" + x0 + "y0=" + y0 +"itercount=" + iterCount);
-                }
-                //pw.setArgb(x, y, (iterCount == iterMax ? 0xFFFF00FF : 0xFFFFFFFF));
-                //pw.setPixels(x, y, 1, 1, PixelFormat.getIntArgbInstance(), new int[] { (iterCount == iterMax ? 0xFFFF00FF : 0xFFFFFFFF) }, 0, 1);
                 if(iterCount == iterMax){
-                    pw.setArgb(x, y, 0xFF000000
-                    );
+                    pw.setPixels(x, y, 1, 1, PixelFormat.getIntArgbInstance(), new int[] { 0xFF000000 }, 0, 1);
                 }
                 else{
                     pw.setPixels(x, y, 1, 1, PixelFormat.getIntArgbInstance(), new int[] {getIntFromColor(0, 255*iterCount/100, 0)}, 0, 1);
                 }
             }
         }
-        //gc.drawImage(wr, 80,0, width, height);
+        pw.setArgb(0, 0, 0xFFFF0000);
+        gc.drawImage(wr, 0,0, width, height);
+    }
+
+    public void zoom() {
+        scale = 512;
+        final int height = 512;
+        final int width = 512;
+        int w = (int) Math.max(Math.abs(mouseAx-mouseBx), Math.abs(mouseAy-mouseBy));
+        int h = w;
+
+        System.out.println("w:" + w + "h:" + h);
+
+        double newAx, newAy, newBx, newBy;
+        newAx = ((xb - xa)/512)*mouseAx + xa;
+        newAy = ((yb - ya)/512)*mouseAy + ya;
+        //newBx = newAx + w;
+        //newBy = newAy + h;
+        System.out.println("newAx: " + newAx);
+        System.out.println("newAy: " + newAy);
+        //System.out.println("newBx: " + newBx);
+        //System.out.println("newBy: " + newBy);
+
+        WritableImage wr = new WritableImage(width, height);
+        PixelWriter pw = wr.getPixelWriter();
+
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+
+
+
+
+                double a = (x - w / 2.0)/scale;
+                double b = (y - h / 2.0)/scale;
+                Complex c = new Complex(a, b);
+                int iterCount = mandelbrot(c);
+
+                if(iterCount == iterMax){
+                    pw.setPixels(x, y, 1, 1, PixelFormat.getIntArgbInstance(), new int[] { 0xFF000000 }, 0, 1);
+                }
+                else{
+                    pw.setPixels(x, y, 1, 1, PixelFormat.getIntArgbInstance(), new int[] {getIntFromColor(0, 255*iterCount/100, 0)}, 0, 1);
+                }
+            }
+        }
+        pw.setArgb(0, 0, 0xFFFF0000);
         gc.drawImage(wr, 0,0, width, height);
     }
 }
