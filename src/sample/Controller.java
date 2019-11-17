@@ -4,6 +4,7 @@ import complex.Complex;
 import javafx.event.ActionEvent;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.TextField;
 import javafx.scene.effect.BlendMode;
 import javafx.scene.image.PixelFormat;
 import javafx.scene.image.PixelWriter;
@@ -12,17 +13,32 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 
 public class Controller {
+    public TextField setR;
+    public TextField setP;
+    public TextField setWidth;
+    public TextField setHeight;
+    public TextField xMin;
+    public TextField xMax;
+    public TextField yMin;
+    public TextField yMax;
+
+
     int R = 4;
     private GraphicsContext gc;
     public Canvas canvas;
     int iterMax = 100;
     int scale = 256;
     private double mouseAx, mouseAy, mouseBx, mouseBy;
-    private double xa, xb, ya, yb;
+    private double aX, bX, aY, bY;
 
     public void initialize() {
         gc = canvas.getGraphicsContext2D();
         clear(gc);
+
+        aX = -1;
+        bX = 1;
+        aY = 1;
+        bY = -1;
     }
 
     private void clear(GraphicsContext gc) {
@@ -73,9 +89,6 @@ public class Controller {
         rect(gc);
         zoom();
 
-        //scale*=2;
-        //zoomCount++;
-        //System.out.println("scale" + scale);
         System.out.format("mouseAx:%f mouseAy:%f mouseBx:%f mouseBy:%f\n", mouseAx, mouseAy, mouseBx, mouseBy);
     }
 
@@ -99,28 +112,21 @@ public class Controller {
     }
 
     public void draw(ActionEvent actionEvent) {
-        scale = 256;
         final int height = 512;
         final int width = 512;
 
-        xa = -1;
-        xb = 1;
-        ya = 1;
-        yb = -1;
+        double ix = (bX - aX)/width;
+        double iy = (bY - aY)/height;
 
         WritableImage wr = new WritableImage(width, height);
         PixelWriter pw = wr.getPixelWriter();
 
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
-                double x0 = (x - width / 2.0)/scale;
-                double y0 = (y - height / 2.0)/scale;
-                //System.out.println("x0=" + x0 + "\t " + "y0=" + y0);
+                double re = aX + x * ix;
+                double im = aY + y * iy;
 
-                /*if((x == 0 && y == 0) || (x == 511 && y == 0) ||(x == 0 && y == 511) ||(x == 511 && y == 511)){
-                    System.out.println("x0=" + x0 + "y0=" + y0);
-                }*/
-                Complex c = new Complex(x0, y0);
+                Complex c = new Complex(re, im);
 
                 int iterCount = mandelbrot(c);
                 if(iterCount == iterMax){
@@ -136,7 +142,12 @@ public class Controller {
     }
 
     public void zoom() {
-        scale = 512;
+        /*double tmpMAx = mouseAx, tmpMAy = mouseAy, tmpMBx = mouseBx, tmpMBy = mouseBy;
+        mouseAx = Math.min(mouseAx, mouseBx);
+        mouseBx = Math.max(mouseAx, mouseBx);
+        mouseAy = Math.min(mouseAy, mouseBy);
+        mouseBy = Math.max(mouseAy, mouseBy);*/
+
         final int height = 512;
         final int width = 512;
         double w = Math.max(Math.abs(mouseAx-mouseBx), Math.abs(mouseAy-mouseBy));
@@ -145,10 +156,10 @@ public class Controller {
         System.out.println("w:" + w + "h:" + h);
 
         double newAx, newAy, newBx, newBy;
-        newAx = ((xb - xa)/512)*mouseAx + xa;
-        newAy = ((yb - ya)/512)*mouseAy + ya;
-        newBx = ((xb - xa)/512)*mouseBx + xa;
-        newBy = ((yb - ya)/512)*mouseBy + ya;
+        newAx = ((bX - aX)/512)*mouseAx + aX;
+        newAy = ((bY - aY)/512)*mouseAy + aY;
+        newBx = ((bX - aX)/512)*mouseBx + aX;
+        newBy = ((bY - aY)/512)*mouseBy + aY;
 
         double ix = (newBx - newAx)/width;
         double iy = (newBy - newAy)/height;
@@ -175,5 +186,30 @@ public class Controller {
         }
         pw.setArgb(0, 0, 0xFFFF0000);
         gc.drawImage(wr, 0,0, width, height);
+
+        aX = newAx;
+        aY = newAy;
+        bX = newBx;
+        bY = newBy;
+    }
+
+    public void setR(ActionEvent actionEvent) {
+        try {
+            R = Integer.parseInt(setR.getText());
+        } catch (Exception e) {
+            System.out.println("Not a number");
+        }
+    }
+
+    public void setP(ActionEvent actionEvent) {
+        try{
+            aX = Integer.parseInt(xMin.getText());
+            aY = Integer.parseInt(yMax.getText());
+            bX = Integer.parseInt(xMax.getText());
+            bY = Integer.parseInt(yMin.getText());
+        }
+        catch (Exception e){
+            System.out.println("Not a number");
+        }
     }
 }
