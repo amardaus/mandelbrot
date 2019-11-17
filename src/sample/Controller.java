@@ -139,20 +139,19 @@ public class Controller {
         scale = 512;
         final int height = 512;
         final int width = 512;
-        int w = (int) Math.max(Math.abs(mouseAx-mouseBx), Math.abs(mouseAy-mouseBy));
-        int h = w;
+        double w = Math.max(Math.abs(mouseAx-mouseBx), Math.abs(mouseAy-mouseBy));
+        double h = w;
 
         System.out.println("w:" + w + "h:" + h);
 
         double newAx, newAy, newBx, newBy;
         newAx = ((xb - xa)/512)*mouseAx + xa;
         newAy = ((yb - ya)/512)*mouseAy + ya;
-        //newBx = newAx + w;
-        //newBy = newAy + h;
-        System.out.println("newAx: " + newAx);
-        System.out.println("newAy: " + newAy);
-        //System.out.println("newBx: " + newBx);
-        //System.out.println("newBy: " + newBy);
+        newBx = ((xb - xa)/512)*mouseBx + xa;
+        newBy = ((yb - ya)/512)*mouseBy + ya;
+
+        double ix = (newBx - newAx)/width;
+        double iy = (newBy - newAy)/height;
 
         WritableImage wr = new WritableImage(width, height);
         PixelWriter pw = wr.getPixelWriter();
@@ -160,12 +159,10 @@ public class Controller {
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
 
+                double re = newAx + x * ix;
+                double im = newAy + y * iy;
 
-
-
-                double a = (x - w / 2.0)/scale;
-                double b = (y - h / 2.0)/scale;
-                Complex c = new Complex(a, b);
+                Complex c = new Complex(re, im);
                 int iterCount = mandelbrot(c);
 
                 if(iterCount == iterMax){
