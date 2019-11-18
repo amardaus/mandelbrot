@@ -74,6 +74,13 @@ public class Controller {
             h = -h;
         }
 
+        /*if(w > h){
+            mouseBy += (w-h);
+        }
+        else{
+            mouseBx += (h-w);
+        }*/
+
         gc.strokeRect(x + 0.5, y + 0.5, w, h);
     }
 
@@ -87,6 +94,16 @@ public class Controller {
     public void mouseReleased(MouseEvent mouseEvent) {
         gc.setGlobalBlendMode(BlendMode.SRC_OVER);
         rect(gc);
+
+        double w = mouseBx - mouseAx;
+        double h = mouseBy - mouseAy;
+        if(w > h){
+            mouseBy += (w-h);
+        }
+        else{
+            mouseBx += (h-w);
+        }
+
         zoom();
 
         System.out.format("mouseAx:%f mouseAy:%f mouseBx:%f mouseBy:%f\n", mouseAx, mouseAy, mouseBx, mouseBy);

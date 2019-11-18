@@ -19,21 +19,20 @@
 
     <HBox GridPane.columnIndex="1" GridPane.rowIndex="3">
         <Label text="xMin"/>
-        <TextField fx:id="xMin" maxWidth="30"/>
+        <TextField fx:id="xMin" maxWidth="30" text="-1"/>
         <Label text="xMax"/>
-        <TextField fx:id="xMax" maxWidth="30"/>
+        <TextField fx:id="xMax" maxWidth="30" text="1"/>
         <Label text="yMin"/>
-        <TextField fx:id="yMin" maxWidth="30"/>
+        <TextField fx:id="yMin" maxWidth="30" text="-1"/>
         <Label text="yMax"/>
-        <TextField fx:id="yMax" maxWidth="30"/>
+        <TextField fx:id="yMax" maxWidth="30" text="1"/>
     </HBox>
     <Button text="set p" onAction="#setP" GridPane.columnIndex="2" GridPane.rowIndex="3"/>
 
-
-    <TextField fx:id="setWidth" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+    <!-- <TextField fx:id="setWidth" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
     <Button text="set width " GridPane.columnIndex="2" GridPane.rowIndex="4"/>
 
     <TextField fx:id="setHeight" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
-    <Button text="set height" GridPane.columnIndex="2" GridPane.rowIndex="5"/>
+    <Button text="set height" GridPane.columnIndex="2" GridPane.rowIndex="5"/> -->
 
 </GridPane>
